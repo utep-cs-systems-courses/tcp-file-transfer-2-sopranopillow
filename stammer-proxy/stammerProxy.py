@@ -94,8 +94,7 @@ class Fwd:
         if len(self.buf) == 0 and self.inClosed:
             self.outSock.shutdown(SHUT_WR)
             self.conn.fwdDone(self)
-            
-    
+
 connections = set()
 
 class Conn:
@@ -133,7 +132,7 @@ class Conn:
     def doErr(self):
         print("forwarder from client %s failing due to error" % repr(self.caddr))
         die()
-                
+
 class Listener:
     def __init__(self, bindaddr, saddr, addrFamily=AF_INET, socktype=SOCK_STREAM): # saddr is address of server
         self.bindaddr, self.saddr = bindaddr, saddr
@@ -161,7 +160,7 @@ class Listener:
         return None
     def checkErr(self):
         return self.lsock
-        
+
 
 l = Listener(("0.0.0.0", listenPort), (serverHost, serverPort))
 

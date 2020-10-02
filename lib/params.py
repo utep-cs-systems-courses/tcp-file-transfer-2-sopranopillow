@@ -30,7 +30,7 @@ def parseParams(_switchesVarDefaults):
         print("Problem parsing parameters (exception=%s)" % e)
         usage()
     return paramMap
-        
+
 def usage():
     print("%s usage:" % progName)
     for switches, param, default in switchesVarDefaults:
