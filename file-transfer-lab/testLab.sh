@@ -3,7 +3,7 @@ mkdir receivedFiles
 
 cd ./testFiles
 
-# empty line
+# empty file
 touch empty.txt
 
 # single line
@@ -22,3 +22,14 @@ python3 fileServer.py &
 
 # starting stammerProxy.py
 python3 ../stammer-proxy/stammerProxy.py
+
+# client test
+
+# client with proxy test
+
+# multiple client tests
+
+# cleanup
+
+rm -rf ./testFiles
+rm -rf ./receivedFiles

@@ -28,13 +28,19 @@ print('listening on:',bindAddr)
 
 while True:
     sock, addr = lsock.accept()
-
     if not os.fork():
         print("new child process handling connection from", addr)
         while True:
             payload = framedReceive(sock, debug)
-            if debug: print("rec'd", payload)
-            if not payload:
-                if debug: print('child exiting')
-                sys.exit(0)
-            framedSend(sock, payload, debug)
+            if payload == b'':
+                break
+            if payload != None:
+                f, data = re.split(':', payload.decode())
+                print('####',f,'\n####',data, data.encode())
+                fd = os.open(f, os.O_CREAT | os.O_WRONLY)
+                os.write(fd, data.encode())
+                os.close(fd)
+                if debug: print("rec'd", payload.decode())
+                framedSend(sock, 'Successfuly received and wrote line'.encode())
+        framedSend(sock, 'File transfered succesfully'.encode())
+        print("child from connection {} closed".format(addr))
