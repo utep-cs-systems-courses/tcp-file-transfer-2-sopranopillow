@@ -15,7 +15,7 @@ switchesVarDefaults = (
 
 def destroyParams(server, debug, usage, proxy): return server, debug, usage, proxy # destructing params
 
-def sendFile(sock, source, destination, debug, proxy):
+def sendFile(sock, source, destination, debug, proxy): # Sends file based on source, destination and proxy
     if not os.path.exists(source):
         print('File %s does not exist' % source)
         return
@@ -25,7 +25,7 @@ def sendFile(sock, source, destination, debug, proxy):
         framedSend(sock, payload, debug)
         callback = framedReceive(sock, debug)
     f.close()
-    framedSend(sock, b'', debug)
+    framedSend(sock, b'', debug) # Letting server know file transfered completely
     print(framedReceive(sock, debug).decode())
 
 put = False
@@ -36,9 +36,9 @@ if len(sys.argv) > 1 and 'put' in sys.argv: # Setting up put, source and destina
         sys.exit(0)
     putIndex = sys.argv.index('put')
     put, source, destination = True, sys.argv[putIndex + 1], sys.argv[putIndex + 2]
-    sys.argv = sys.argv[:putIndex] + (sys.argv[putIndex + 4:] if len(sys.argv) > putIndex + 4 else [])
+    sys.argv = sys.argv[:putIndex] + (sys.argv[putIndex + 4:] if len(sys.argv) > putIndex + 4 else []) # Resetting argv so that there are no errors when checking for params
     
-import params
+import params # has to be imported until here since params runs code when imported therefore argv needs to be dealt with before importing.
     
 server, debug, usage, proxy = destroyParams(**params.parseParams(switchesVarDefaults))
 
@@ -62,4 +62,4 @@ if put:
     sock.connect(addrPort)
 
     sendFile(sock, source, destination, debug, proxy)
-
+# assuming that if put is not given then user must have tried --usage

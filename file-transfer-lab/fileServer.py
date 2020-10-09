@@ -31,16 +31,18 @@ while True:
     if not os.fork():
         print("new child process handling connection from", addr)
         while True:
-            payload = framedReceive(sock, debug)
-            if payload == b'':
-                break
-            if payload != None:
-                f, data = re.split(':', payload.decode())
-                print('####',f,'\n####',data, data.encode())
-                fd = os.open(f, os.O_CREAT | os.O_WRONLY)
-                os.write(fd, data.encode())
-                os.close(fd)
-                if debug: print("rec'd", payload.decode())
-                framedSend(sock, 'Successfuly received and wrote line'.encode())
+            try:
+                payload = framedReceive(sock, debug)
+                if payload == b'': # means we've reached end
+                    break
+                if payload != None:
+                    f, data = re.split(':', payload.decode())
+                    fd = open(f, 'a+') # appending instead of overwritting since might want to keep file.
+                    fd.write(data)
+                    fd.close()
+                    if debug: print("rec'd", payload.decode())
+                    framedSend(sock, 'Successfuly received and wrote line'.encode())
+            except:
+                print('Exception: Could not finish receiving file')
+                sys.exit(1)
         framedSend(sock, 'File transfered succesfully'.encode())
-        print("child from connection {} closed".format(addr))
