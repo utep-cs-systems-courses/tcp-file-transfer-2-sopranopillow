@@ -3,24 +3,17 @@
 import sys
 sys.path.append("../lib")
 sys.path.append("../framed-echo")
-import params, socket, re, os
+import socket, re, os
 from framedSock import framedSend, framedReceive
 
 switchesVarDefaults = (
     (('-s', '--server'), 'server', '127.0.0.1:50001'),
     (('-d', '--debug'), 'debug', False),
     (('-?', '--usage'), 'usage', False),
-    (('-p', '--proxy'), 'proxy', False),
+    (('-p', '--proxy'), 'proxy', False)
 )
 
 def destroyParams(server, debug, usage, proxy): return server, debug, usage, proxy # destructing params
-
-def help():
-    print('The following are the available commands:')
-    print('\thelp -- show this menu')
-    print('\tput <source file> <destination file> -- send file to server')
-    print('\texit -- exit program')
-
 
 def sendFile(sock, source, destination, debug, proxy):
     if not os.path.exists(source):
@@ -35,36 +28,38 @@ def sendFile(sock, source, destination, debug, proxy):
     framedSend(sock, b'', debug)
     print(framedReceive(sock, debug).decode())
 
-
+put = False
+    
+if len(sys.argv) > 1 and 'put' in sys.argv: # Setting up put, source and destination values
+    if len(sys.argv) < 3:
+        print("Wrong use of command or params, to send a file please use the following notation: ./fileClient.py put <sourceFile> <destinationFile> [params]")
+        sys.exit(0)
+    putIndex = sys.argv.index('put')
+    put, source, destination = True, sys.argv[putIndex + 1], sys.argv[putIndex + 2]
+    sys.argv = sys.argv[:putIndex] + (sys.argv[putIndex + 4:] if len(sys.argv) > putIndex + 4 else [])
+    
+import params
+    
 server, debug, usage, proxy = destroyParams(**params.parseParams(switchesVarDefaults))
 
 if usage: params.usage()
 
-try:
-    serverHost, serverPort = re.split(':', server)
-    serverPort = int(serverPort)
-except:
-    print("Can't parse server:port from '%s'" % server)
-    sys.exit(1)
+if put:
+    try:
+        serverHost, serverPort = re.split(':', server)
+        serverPort = int(serverPort)
+    except:
+        print("Can't parse server:port from '%s'" % server)
+        sys.exit(1)
 
-addrPort = (serverHost, serverPort)
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    addrPort = (serverHost, serverPort)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-if sock is None:
-    print('could not open socket')
-    sys.exit(1)
+    if sock is None:
+        print('could not open socket')
+        sys.exit(1)
 
-sock.connect(addrPort)
+    sock.connect(addrPort)
 
-while True:
-    command = input('$ ')
-    if command == 'exit':
-        sys.exit(0)
-    elif command == 'help':
-        help()
-    else:
-        put = command.split(' ')
-        if len(put) != 3:
-            print("Wrong use of command, use 'help' command for more info")
-        else:
-            sendFile(sock, put[1], put[2], debug, proxy)
+    sendFile(sock, source, destination, debug, proxy)
+
