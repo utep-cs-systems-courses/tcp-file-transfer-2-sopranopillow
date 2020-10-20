@@ -1,4 +1,4 @@
-# Tcp file transfer (Fork)
+# Tcp file transfer (Threads)
 ---
 
 ## Simple use
@@ -41,5 +41,8 @@ If you want to use a different listener port you can use the following command:
 $ put <source> <output> -s <addess>:<port>
 ```
 
-## Difference between this implementation and Threading
-This implementation mainly uses the fork function which is really expensive. Note: This implementation uses framedSend/framedReceive.
+## Difference between this implementation and Fork
+This implementation mainly uses threading, this allows for an easier and more efficient implementation.
+
+***Note:*** This implementation uses ```encapFramedSock.py``` which replaces framedSend/framedReceive by encasing the whole socket.
+***Note:*** This implementation also has some improvements, such as handling multiple connections that try to access same file by rejecting the others. This is implemented with a dictionary for ease of use.

@@ -17,7 +17,7 @@ switchesVarDefaults = (
 def destroyParams(debug, listenPort, usage, maxConnections):
     return debug, listenPort, usage, maxConnections # destructing dictionary
 
-currentFile = {}
+currentFile = {} # dictionary needed to tell which file is in use
 
 debug, listenPort, usage, maxConnections = destroyParams(**params.parseParams(switchesVarDefaults))
 
@@ -38,16 +38,16 @@ class Server(Thread):
     def run(self):
         print("new thread handling connection from", self.addr)
 
-        global lock, currentFile
+        global lock, currentFile # need to use global keyword because of threads
 
         while True:
             try:
                 payload = self.fsock.receive(debug)
 
                 if payload == b'': # means we've reached end
-                    lock.acquire()
+                    lock.acquire() # Locks is needed in case two threads try to access the dict at the same time
                     de = ""
-                    for i in currentFile:
+                    for i in currentFile: # This is needed since we don't know the name of the file
                         if currentFile[i] == self.addr[1]:
                             de = i
                     currentFile.pop(de)
@@ -57,15 +57,15 @@ class Server(Thread):
                     f, data = re.split(':', payload.decode())
                     if len(currentFile) > 0 and f in currentFile and currentFile[f] != self.addr[1]:
                         print('Failed to send file, file is in use')
-                        self.fsock.send(b'abort', debug)
+                        self.fsock.send(b'abort', debug) # letting client know someone is using the file
                         sys.exit(1)
                     else:
                         if len(currentFile) == 0 or not f in currentFile:
-                            fd = open(f, 'w+')
+                            fd = open(f, 'w+') # if first time writing to file then create new file
                         else:
-                            fd = open(f, 'a+')
+                            fd = open(f, 'a+') # otherwise just append
                         lock.acquire()
-                        currentFile[f] = self.addr[1]
+                        currentFile[f] = self.addr[1] # using addr[1] as the differentiator
                         lock.release()
                     fd.write(data)
                     fd.close()
