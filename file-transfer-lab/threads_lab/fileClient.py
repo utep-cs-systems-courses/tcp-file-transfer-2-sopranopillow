@@ -4,7 +4,7 @@ import sys
 sys.path.append("../../lib")
 sys.path.append("../../framed-echo")
 import socket, re, os
-from framedSock import framedSend, framedReceive
+from encapFramedSock import EncapFramedSock
 
 switchesVarDefaults = (
     (('-s', '--server'), 'server', '127.0.0.1:50001'),
@@ -15,18 +15,26 @@ switchesVarDefaults = (
 
 def destroyParams(server, debug, usage, proxy): return server, debug, usage, proxy # destructing params
 
-def sendFile(sock, source, destination, debug, proxy): # Sends file based on source, destination and proxy
+def sendFile(fsock, source, destination, debug, proxy): # Sends file based on source, destination and proxy
     if not os.path.exists(source):
         print('File %s does not exist' % source)
         return
     f = open(source)
-    for line in f:
-        payload = "{}:{}".format(destination, line).encode()
-        framedSend(sock, payload, debug)
-        callback = framedReceive(sock, debug)
+    try:
+        for line in f:
+            payload = "{}:{}".format(destination, line).encode()
+            fsock.send(payload, debug)
+            callback = fsock.receive(debug)
+            if callback == b'abort':
+                print('File already in use')
+                sys.exit(1)
+    except:
+        print('Exception: Failed to send file')
+        f.close()
+        sys.exit(1)
     f.close()
-    framedSend(sock, b'', debug) # Letting server know file transfered completely
-    print(framedReceive(sock, debug).decode())
+    fsock.send(b'', debug) # Letting server know file transfered completely
+    print(fsock.receive(debug).decode())
 
 put = False
 
@@ -65,6 +73,7 @@ if put:
 
     sock.connect(addrPort)
 
-    sendFile(sock, source, destination, debug, proxy)
+    fsock = EncapFramedSock((sock, addrPort))
+
+    sendFile(fsock, source, destination, debug, proxy)
 # assuming that if put is not given then user must have tried --usage
-sock.close()

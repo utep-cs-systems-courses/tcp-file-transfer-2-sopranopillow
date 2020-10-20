@@ -13,6 +13,7 @@ switchesVarDefaults = (
     (('-l', '--listenPort'), 'listenPort', 50001),
     (('-d', '--debug'), 'debug', False),
     (('-?', '--usage'), 'usage', False),
+    (('-c', '--connections'), 'maxConnections', 5)
 )
 
 debug, listenPort, usage, maxConnections = destroyParams(**params.parseParams(switchesVarDefaults))
