@@ -1,8 +1,8 @@
 #! /usr/bin/env python3
 
 import sys
-sys.path.append("../lib")
-sys.path.append("../framed-echo")
+sys.path.append("../../lib")
+sys.path.append("../../framed-echo")
 import re, socket, params, os
 from framedSock import framedSend, framedReceive
 
@@ -13,7 +13,6 @@ switchesVarDefaults = (
     (('-l', '--listenPort'), 'listenPort', 50001),
     (('-d', '--debug'), 'debug', False),
     (('-?', '--usage'), 'usage', False),
-    (('-c', '--connections'), 'maxConnections', 5)
 )
 
 debug, listenPort, usage, maxConnections = destroyParams(**params.parseParams(switchesVarDefaults))
@@ -21,7 +20,7 @@ debug, listenPort, usage, maxConnections = destroyParams(**params.parseParams(sw
 if usage: params.usage() # printing usage
 
 lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-bindAddr = ('127.0.0.1', listenPort)
+bindAddr = ('127.0.0.1', int(listenPort))
 lsock.bind(bindAddr)
 lsock.listen(maxConnections)
 print('listening on:',bindAddr)

@@ -1,8 +1,8 @@
 #! /usr/bin/env python3
 
 import sys
-sys.path.append("../lib")
-sys.path.append("../framed-echo")
+sys.path.append("../../lib")
+sys.path.append("../../framed-echo")
 import socket, re, os
 from framedSock import framedSend, framedReceive
 
@@ -10,7 +10,7 @@ switchesVarDefaults = (
     (('-s', '--server'), 'server', '127.0.0.1:50001'),
     (('-d', '--debug'), 'debug', False),
     (('-?', '--usage'), 'usage', False),
-    (('-p', '--proxy'), 'proxy', False)
+    (('-p', '--proxy'), 'proxy', False),
 )
 
 def destroyParams(server, debug, usage, proxy): return server, debug, usage, proxy # destructing params
@@ -29,24 +29,28 @@ def sendFile(sock, source, destination, debug, proxy): # Sends file based on sou
     print(framedReceive(sock, debug).decode())
 
 put = False
-    
+
 if len(sys.argv) > 1 and 'put' in sys.argv: # Setting up put, source and destination values
     if len(sys.argv) < 3:
         print("Wrong use of command or params, to send a file please use the following notation: ./fileClient.py put <sourceFile> <destinationFile> [params]")
         sys.exit(0)
     putIndex = sys.argv.index('put')
     put, source, destination = True, sys.argv[putIndex + 1], sys.argv[putIndex + 2]
-    sys.argv = sys.argv[:putIndex] + (sys.argv[putIndex + 4:] if len(sys.argv) > putIndex + 4 else []) # Resetting argv so that there are no errors when checking for params
-    
+    newArgv = sys.argv
+    newArgv.remove('put')
+    newArgv.remove(source)
+    newArgv.remove(destination)
+    sys.argv = newArgv  #resetting argv so that there are no errors when checking for params
+
 import params # has to be imported until here since params runs code when imported therefore argv needs to be dealt with before importing.
-    
+
 server, debug, usage, proxy = destroyParams(**params.parseParams(switchesVarDefaults))
 
 if usage: params.usage()
 
 if put:
     try:
-        serverHost, serverPort = re.split(':', server)
+        serverHost, serverPort = re.split(':', ('127.0.0.1:50000' if proxy else server))
         serverPort = int(serverPort)
     except:
         print("Can't parse server:port from '%s'" % server)
